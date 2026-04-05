@@ -157,4 +157,58 @@ function updateText() {
     const full = getFullPrice() - (parseFloat(document.getElementById('trade-val').value) || 0);
     const pct = document.getElementById('dep-slider').value;
     
-    document.getElementById('
+    document.getElementById('dep-perc-label').innerText = pct + "% Deposit";
+    document.getElementById('dep-num').value = Math.round(full * (pct / 100));
+    calculateWeekly();
+}
+
+function updateSlider() {
+    const full = getFullPrice() - (parseFloat(document.getElementById('trade-val').value) || 0);
+    const amt = parseFloat(document.getElementById('dep-num').value) || 0;
+    let pct = full > 0 ? Math.round((amt / full) * 100) : 15;
+    
+    const finalPct = Math.min(Math.max(pct, 15), 100);
+    document.getElementById('dep-slider').value = finalPct;
+    document.getElementById('dep-perc-label').innerText = finalPct + "% Deposit";
+    calculateWeekly();
+}
+
+function toggleTradeIn() {
+    const s = document.getElementById('trade-in-section');
+    const btn = document.querySelector('.trade-in-btn');
+    if (s.style.display === 'block') {
+        s.style.display = 'none';
+        document.getElementById('trade-val').value = '';
+        btn.innerText = '+ Add Trade-In Value';
+    } else {
+        s.style.display = 'block';
+        btn.innerText = '- Remove Trade-In';
+    }
+    updateText();
+}
+
+function calculateWeekly() {
+    const sel = document.getElementById('product-select').selectedOptions[0];
+    if (!sel) return;
+
+    const full = getFullPrice() - (parseFloat(document.getElementById('trade-val').value) || 0);
+    const deposit = parseFloat(document.getElementById('dep-num').value) || 0;
+    const loan = full - deposit;
+    
+    const annualRate = parseFloat(sel.getAttribute('data-rate')) || 0.05;
+    const weeklyRate = annualRate / 52;
+    const totalWeeks = parseInt(document.getElementById('term-select').value) * 52;
+    
+    if (loan <= 0 || weeklyRate <= 0) {
+        document.getElementById('weekly-result').innerText = "$0.00";
+        return;
+    }
+
+    const pmt = (loan * weeklyRate) / (1 - Math.pow(1 + weeklyRate, -totalWeeks));
+    document.getElementById('weekly-result').innerText = "$" + pmt.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+
+window.onload = loadPrices;
+</script>
+</body>
+</html>
