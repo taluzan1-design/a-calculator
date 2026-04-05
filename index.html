@@ -5,90 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alma Investment Calculator</title>
     <style>
-        /* Alma Brandbook Palette */
-        :root {
-            --alma-purple: #4b2c73;
-            --alma-light-purple: #f9f6ff;
-            --alma-text: #2c3e50;
-            --alma-gray: #95a5a6;
-        }
-
+        :root { --alma-purple: #4b2c73; --alma-light-purple: #f9f6ff; --alma-text: #2c3e50; --alma-gray: #95a5a6; }
         body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; display: flex; justify-content: center; padding: 20px; background: #f4f7f9; }
         .calc-card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
-        
         .logo-container { text-align: center; margin-bottom: 25px; min-height: 100px; display: flex; align-items: center; justify-content: center; }
-        .company-logo { width: 240px; height: auto; border: none; }
-
+        .company-logo { width: 240px; height: auto; }
         .img-container { background: #fff; border-radius: 12px; overflow: hidden; margin-bottom: 20px; border: 1px solid #eee; height: 260px; display: flex; align-items: center; justify-content: center; }
         img#product-img { max-width: 90%; max-height: 90%; object-fit: contain; }
-
-        label { display: block; margin: 18px 0 6px; font-weight: 600; color: var(--alma-text); font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
-        select, input[type="number"] { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #dce4ec; font-size: 16px; box-sizing: border-box; background: #fdfdfd; color: var(--alma-text); }
-        input[type="range"] { width: 100%; margin-top: 10px; cursor: pointer; accent-color: var(--alma-purple); }
-        
-        /* UI Sections */
-        .trade-in-btn { background: none; border: 1px solid var(--alma-purple); color: var(--alma-purple); padding: 6px 14px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold; transition: 0.3s; margin: 10px 0; display: block; width: fit-content; }
-        .trade-in-btn:hover { background: var(--alma-purple); color: white; }
-        
+        label { display: block; margin: 18px 0 6px; font-weight: 600; color: var(--alma-text); font-size: 13px; text-transform: uppercase; }
+        select, input[type="number"] { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #dce4ec; font-size: 16px; box-sizing: border-box; }
+        input[type="range"] { width: 100%; margin-top: 10px; accent-color: var(--alma-purple); }
+        .trade-in-btn { background: none; border: 1px solid var(--alma-purple); color: var(--alma-purple); padding: 6px 14px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold; margin: 10px 0; }
         #trade-in-section, #harmony-options { display: none; margin: 10px 0; background: var(--alma-light-purple); padding: 15px; border-radius: 10px; border-left: 4px solid var(--alma-purple); }
-
         .applicator-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .app-input-group small { display: block; margin-bottom: 4px; color: var(--alma-purple); font-weight: bold; }
-
-        /* Result Box */
-        .result-box { background: var(--alma-purple); color: white; padding: 25px; border-radius: 12px; text-align: center; margin-top: 25px; box-shadow: 0 4px 15px rgba(75, 44, 115, 0.3); }
-        .result-box span { font-size: 13px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; }
+        .result-box { background: var(--alma-purple); color: white; padding: 25px; border-radius: 12px; text-align: center; margin-top: 25px; }
         .result-box h2 { margin: 8px 0 0; font-size: 38px; font-weight: 700; }
-        
         .flex-row { display: flex; justify-content: space-between; margin-top: 8px; }
         small { color: var(--alma-gray); font-size: 11px; }
-        #rate-display { color: var(--alma-purple); font-weight: bold; font-size: 13px; }
-        
-        .disclaimer-box { margin-top: 25px; padding-top: 15px; border-top: 1px solid #eee; }
-        .footer-text { font-size: 10px; color: var(--alma-gray); line-height: 1.6; text-align: justify; }
-        .gst-note { font-size: 12px; color: #e74c3c; font-weight: bold; margin-top: 10px; text-align: center; }
+        #rate-display { color: var(--alma-purple); font-weight: bold; }
+        .footer-text { font-size: 10px; color: var(--alma-gray); text-align: justify; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
     </style>
 </head>
 <body>
 
 <div class="calc-card">
     <div class="logo-container">
-        <img src="https://anybodi.com.au/wp-content/uploads/bpxcftr-profile-uploads/741/image/Alma-Purple-Logo-01.png" class="company-logo" alt="Alma Lasers Australia">
+        <img src="https://anybodi.com.au/wp-content/uploads/bpxcftr-profile-uploads/741/image/Alma-Purple-Logo-01.png" class="company-logo" alt="Alma Lasers">
     </div>
 
     <div class="img-container">
-        <img id="product-img" src="https://via.placeholder.com/400x260?text=Syncing+Alma+Database..." alt="System Preview">
+        <img id="product-img" src="" alt="System Preview">
     </div>
     
     <label>Select Alma System</label>
-    <select id="product-select" onchange="syncData()">
-        <option value="0">Loading Database...</option>
-    </select>
+    <select id="product-select" onchange="syncData()"></select>
 
     <div id="harmony-options">
         <label>Harmony Applicators</label>
         <div class="applicator-grid">
-            <div class="app-input-group">
-                <small>Laser (Qty)</small>
-                <input type="number" id="laser-count" value="0" min="0" placeholder="0" oninput="updateText()">
-            </div>
-            <div class="app-input-group">
-                <small>IPL/AFT (Qty)</small>
-                <input type="number" id="ipl-count" value="0" min="0" placeholder="0" oninput="updateText()">
-            </div>
+            <div><small>Laser (Qty)</small><input type="number" id="laser-count" value="0" min="0" oninput="updateText()"></div>
+            <div><small>IPL/AFT (Qty)</small><input type="number" id="ipl-count" value="0" min="0" oninput="updateText()"></div>
         </div>
     </div>
     
     <button type="button" class="trade-in-btn" onclick="toggleTradeIn()">+ Add Trade-In Value</button>
-    
     <div id="trade-in-section">
         <label>Trade-In Value ($ Excl. GST)</label>
         <input type="number" id="trade-val" placeholder="0" oninput="updateText()">
     </div>
 
-    <div class="gst-note">All prices shown exclude GST.</div>
-
-    <label>Deposit Amount (Min 15%)</label>
+    <label id="dep-label">Deposit Amount (Min 15%)</label>
     <input type="number" id="dep-num" oninput="updateSlider()">
     <input type="range" id="dep-slider" min="15" max="100" value="15" oninput="updateText()">
     <div class="flex-row">
@@ -108,13 +74,7 @@
         <h2 id="weekly-result">$0.00</h2>
     </div>
     
-    <div class="disclaimer-box">
-        <p class="footer-text">
-            <strong>ESTIMATE ONLY:</strong> Figures provided are estimates based on an annual interest rate. Trade-in value is subject to inspection. All prices are <strong>exclusive of GST</strong>.
-            <br><br>
-            © 2026 Alma Lasers Australia.
-        </p>
-    </div>
+    <div class="footer-text">© 2026 Alma Lasers Australia. Figures are estimates based on annual interest rates. Subject to approval. All prices excl. GST.</div>
 </div>
 
 <script>
@@ -123,8 +83,6 @@ const googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSFAcnJ9
 async function loadPrices() {
     try {
         const response = await fetch(googleSheetUrl + '&t=' + new Date().getTime());
-        if (!response.ok) throw new Error("Connection Error");
-        
         const csvData = await response.text();
         const rows = csvData.split(/\r?\n/).filter(row => row.trim() !== "").slice(1);
         const select = document.getElementById('product-select');
@@ -132,131 +90,34 @@ async function loadPrices() {
 
         rows.forEach(row => {
             const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-            if (cols.length >= 2 && cols[0].trim() !== "") {
+            if (cols.length >= 2) {
                 const opt = document.createElement('option');
                 const rawPrice = cols[1].replace(/[^0-9.]/g, '');
                 opt.value = rawPrice;
-                opt.text = `${cols[0].trim().replace(/"/g, '')} ($${Number(rawPrice).toLocaleString()})`;
+                opt.text = cols[0].trim().replace(/"/g, '');
                 opt.setAttribute('data-img', cols[2]?.trim() || '');
+                opt.setAttribute('data-rate', parseFloat(cols[4]) || 0.05);
                 
-                let rateVal = parseFloat(cols[4]) || 0.05;
-                if (rateVal > 1) rateVal = rateVal / 100; 
-                opt.setAttribute('data-rate', rateVal);
+                // MATCHING YOUR SCREENSHOT: Col F (Index 5) and Col G (Index 6)
+                opt.setAttribute('data-laser-p', parseFloat(cols[5]) || 0);
+                opt.setAttribute('data-ipl-p', parseFloat(cols[6]) || 0);
                 
                 select.appendChild(opt);
             }
         });
-        
         syncData();
-    } catch (e) {
-        console.error("Load failed:", e);
-        document.getElementById('product-select').innerHTML = '<option value="0">Database Offline - Check CSV Link</option>';
-    }
-}
-
-function toggleTradeIn() {
-    const section = document.getElementById('trade-in-section');
-    const btn = document.querySelector('.trade-in-btn');
-    if (section.style.display === 'block') {
-        section.style.display = 'none';
-        document.getElementById('trade-val').value = '';
-        btn.innerText = '+ Add Trade-In Value';
-    } else {
-        section.style.display = 'block';
-        btn.innerText = '- Remove Trade-In';
-    }
-    updateText();
+    } catch (e) { console.error("Database failed to load", e); }
 }
 
 function syncData() {
-    const select = document.getElementById('product-select');
-    if (!select.selectedOptions.length) return;
-    const selectedOption = select.selectedOptions[0];
-    const text = selectedOption.text.toLowerCase();
-    const imgUrl = selectedOption.getAttribute('data-img');
-    const rate = parseFloat(selectedOption.getAttribute('data-rate')) || 0;
-    const prodImg = document.getElementById('product-img');
+    const sel = document.getElementById('product-select').selectedOptions[0];
+    if (!sel) return;
+    const text = sel.text.toLowerCase();
     
-    // Check for Harmony specifically
-    const harmonySection = document.getElementById('harmony-options');
-    if (text.includes('harmony')) {
-        harmonySection.style.display = 'block';
-    } else {
-        harmonySection.style.display = 'none';
-        document.getElementById('laser-count').value = 0;
-        document.getElementById('ipl-count').value = 0;
-    }
-
-    if (imgUrl && imgUrl.startsWith('http')) {
-        prodImg.src = imgUrl;
-    } else {
-        prodImg.src = "https://via.placeholder.com/400x260?text=Alma+System";
-    }
+    // Shows options if "Harmony" is in the system name
+    document.getElementById('harmony-options').style.display = text.includes('harmony') ? 'block' : 'none';
     
-    document.getElementById('rate-display').innerText = "Annual Rate: " + (rate * 100).toFixed(1) + "%";
-    updateText();
-}
-
-function getFullSystemPrice() {
-    const basePrice = parseFloat(document.getElementById('product-select').value) || 0;
-    const laserCount = parseInt(document.getElementById('laser-count').value) || 0;
-    const iplCount = parseInt(document.getElementById('ipl-count').value) || 0;
+    const imgUrl = sel.getAttribute('data-img');
+    document.getElementById('product-img').src = imgUrl && imgUrl.startsWith('http') ? imgUrl : "https://via.placeholder.com/400x260?text=Alma+System";
     
-    // Add applicator costs: Laser $40,000 | IPL $15,000
-    const extraCosts = (laserCount * 40000) + (iplCount * 15000);
-    return basePrice + extraCosts;
-}
-
-function updateText() {
-    const totalPrice = getFullSystemPrice();
-    const tradeIn = parseFloat(document.getElementById('trade-val').value) || 0;
-    const adjustedPrice = Math.max(0, totalPrice - tradeIn);
-    
-    const percent = document.getElementById('dep-slider').value;
-    document.getElementById('dep-perc-label').innerText = percent + "% Deposit";
-    document.getElementById('dep-num').value = Math.round(adjustedPrice * (percent / 100));
-    calculateWeekly();
-}
-
-function updateSlider() {
-    const totalPrice = getFullSystemPrice();
-    const tradeIn = parseFloat(document.getElementById('trade-val').value) || 0;
-    const adjustedPrice = Math.max(0, totalPrice - tradeIn);
-    const amount = parseFloat(document.getElementById('dep-num').value) || 0;
-    
-    let percent = adjustedPrice > 0 ? Math.round((amount / adjustedPrice) * 100) : 15;
-    if (percent < 15) percent = 15;
-    if (percent > 100) percent = 100;
-    
-    document.getElementById('dep-slider').value = percent;
-    document.getElementById('dep-perc-label').innerText = percent + "% Deposit";
-    calculateWeekly();
-}
-
-function calculateWeekly() {
-    const select = document.getElementById('product-select');
-    const totalPrice = getFullSystemPrice();
-    const tradeIn = parseFloat(document.getElementById('trade-val').value) || 0;
-    const adjustedPrice = totalPrice - tradeIn;
-    
-    const deposit = parseFloat(document.getElementById('dep-num').value) || 0;
-    const years = parseInt(document.getElementById('term-select').value);
-    const annualRate = parseFloat(select.selectedOptions[0]?.getAttribute('data-rate')) || 0.05;
-    
-    const weeklyRate = annualRate / 52; 
-    const loan = adjustedPrice - deposit;
-    const n = years * 52;
-    
-    if (loan <= 0 || weeklyRate <= 0) {
-        document.getElementById('weekly-result').innerText = "$0.00";
-        return;
-    }
-
-    const pmt = (loan * weeklyRate) / (1 - Math.pow(1 + weeklyRate, -n));
-    document.getElementById('weekly-result').innerText = "$" + pmt.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-}
-
-window.onload = loadPrices;
-</script>
-</body>
-</html>
+    document.getElementById('rate-display').innerText = "Annual Rate: " + (parseFloat(sel.getAttribute('data-rate'))*100).toFixed(1) + "%";
