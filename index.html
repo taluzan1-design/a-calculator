@@ -15,7 +15,7 @@
         label { display: block; margin: 18px 0 6px; font-weight: 600; color: var(--alma-text); font-size: 13px; text-transform: uppercase; }
         select, input[type="number"] { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #dce4ec; font-size: 16px; box-sizing: border-box; }
         input[type="range"] { width: 100%; margin-top: 10px; accent-color: var(--alma-purple); }
-        .trade-in-btn { background: none; border: 1px solid var(--alma-purple); color: var(--alma-purple); padding: 6px 14px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold; margin: 10px 0; }
+        .trade-in-btn { background: none; border: 1px solid var(--alma-purple); color: var(--alma-purple); padding: 6px 14px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold; margin: 10px 0; display: block; }
         #trade-in-section, #harmony-options { display: none; margin: 10px 0; background: var(--alma-light-purple); padding: 15px; border-radius: 10px; border-left: 4px solid var(--alma-purple); }
         .applicator-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
         .result-box { background: var(--alma-purple); color: white; padding: 25px; border-radius: 12px; text-align: center; margin-top: 25px; }
@@ -23,7 +23,7 @@
         .flex-row { display: flex; justify-content: space-between; margin-top: 8px; }
         small { color: var(--alma-gray); font-size: 11px; }
         #rate-display { color: var(--alma-purple); font-weight: bold; }
-        .footer-text { font-size: 10px; color: var(--alma-gray); text-align: justify; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
+        .footer-text { font-size: 10px; color: var(--alma-gray); text-align: justify; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; line-height: 1.4; }
     </style>
 </head>
 <body>
@@ -38,7 +38,9 @@
     </div>
     
     <label>Select Alma System</label>
-    <select id="product-select" onchange="syncData()"></select>
+    <select id="product-select" onchange="syncData()">
+        <option>Loading Systems...</option>
+    </select>
 
     <div id="harmony-options">
         <label>Harmony Applicators</label>
@@ -54,7 +56,7 @@
         <input type="number" id="trade-val" placeholder="0" oninput="updateText()">
     </div>
 
-    <label id="dep-label">Deposit Amount (Min 15%)</label>
+    <label>Deposit Amount (Min 15%)</label>
     <input type="number" id="dep-num" oninput="updateSlider()">
     <input type="range" id="dep-slider" min="15" max="100" value="15" oninput="updateText()">
     <div class="flex-row">
@@ -74,15 +76,20 @@
         <h2 id="weekly-result">$0.00</h2>
     </div>
     
-    <div class="footer-text">© 2026 Alma Lasers Australia. Figures are estimates based on annual interest rates. Subject to approval. All prices excl. GST.</div>
+    <div class="footer-text">
+        <strong>ESTIMATE ONLY:</strong> Figures provided are estimates based on annual interest rates. Trade-in value is subject to inspection. All prices are <strong>exclusive of GST</strong>. <br><br>
+        © 2026 Alma Lasers Australia.
+    </div>
 </div>
 
 <script>
+// Verified CSV Link
 const googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSFAcnJ9hhxYygF0kShdyAhVSkDEnesnjIClHRv-ltdf51sGoAw_MWYNTACsN-6VxqmlI_PcudjNDd-/pub?output=csv';
 
 async function loadPrices() {
     try {
         const response = await fetch(googleSheetUrl + '&t=' + new Date().getTime());
+        if (!response.ok) throw new Error("Fetch failed");
         const csvData = await response.text();
         const rows = csvData.split(/\r?\n/).filter(row => row.trim() !== "").slice(1);
         const select = document.getElementById('product-select');
@@ -98,7 +105,7 @@ async function loadPrices() {
                 opt.setAttribute('data-img', cols[2]?.trim() || '');
                 opt.setAttribute('data-rate', parseFloat(cols[4]) || 0.05);
                 
-                // MATCHING YOUR SCREENSHOT: Col F (Index 5) and Col G (Index 6)
+                // Pulling from your layout: Col F (Index 5) and Col G (Index 6)
                 opt.setAttribute('data-laser-p', parseFloat(cols[5]) || 0);
                 opt.setAttribute('data-ipl-p', parseFloat(cols[6]) || 0);
                 
@@ -106,18 +113,48 @@ async function loadPrices() {
             }
         });
         syncData();
-    } catch (e) { console.error("Database failed to load", e); }
+    } catch (e) { 
+        console.error("Load Error:", e);
+        document.getElementById('product-select').innerHTML = '<option>Error Loading Database</option>';
+    }
 }
 
 function syncData() {
-    const sel = document.getElementById('product-select').selectedOptions[0];
-    if (!sel) return;
+    const select = document.getElementById('product-select');
+    if (!select.selectedOptions.length) return;
+    const sel = select.selectedOptions[0];
     const text = sel.text.toLowerCase();
     
-    // Shows options if "Harmony" is in the system name
+    // Check for Harmony
     document.getElementById('harmony-options').style.display = text.includes('harmony') ? 'block' : 'none';
     
+    // Update Image
     const imgUrl = sel.getAttribute('data-img');
     document.getElementById('product-img').src = imgUrl && imgUrl.startsWith('http') ? imgUrl : "https://via.placeholder.com/400x260?text=Alma+System";
     
-    document.getElementById('rate-display').innerText = "Annual Rate: " + (parseFloat(sel.getAttribute('data-rate'))*100).toFixed(1) + "%";
+    // Update Rate
+    const rate = parseFloat(sel.getAttribute('data-rate')) || 0.05;
+    document.getElementById('rate-display').innerText = "Annual Rate: " + (rate * 100).toFixed(1) + "%";
+    
+    updateText();
+}
+
+function getFullPrice() {
+    const sel = document.getElementById('product-select').selectedOptions[0];
+    if (!sel) return 0;
+    
+    const base = parseFloat(sel.value) || 0;
+    const lPrice = parseFloat(sel.getAttribute('data-laser-p')) || 0;
+    const iPrice = parseFloat(sel.getAttribute('data-ipl-p')) || 0;
+    
+    const lQty = parseInt(document.getElementById('laser-count').value) || 0;
+    const iQty = parseInt(document.getElementById('ipl-count').value) || 0;
+    
+    return base + (lQty * lPrice) + (iQty * iPrice);
+}
+
+function updateText() {
+    const full = getFullPrice() - (parseFloat(document.getElementById('trade-val').value) || 0);
+    const pct = document.getElementById('dep-slider').value;
+    
+    document.getElementById('
