@@ -68,7 +68,7 @@
     <div id="subtotal-section">
         <div class="subtotal-box">
             <span>System & Applicators Subtotal (Excl. GST)</span>
-            <h3 id="subtotal-display">$0.00</h3>
+            <h3 id="subtotal-display">$0</h3>
         </div>
     </div>
     
@@ -94,7 +94,7 @@
 
     <div class="result-box">
         <span>Est. Weekly Investment (Excl. GST)</span>
-        <h2 id="weekly-result">$0.00</h2>
+        <h2 id="weekly-result">$0</h2>
     </div>
     
     <div class="footer-text">
@@ -103,7 +103,6 @@
 </div>
 
 <script>
-// Your specific CSV link
 const googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSFAcnJ9hhxYygF0kShdyAhVSkDEnesnjIClHRv-ltdf51sGoAw_MWYNTACsN-6VxqmlI_PcudjNDd-/pub?output=csv';
 
 async function loadPrices() {
@@ -132,7 +131,7 @@ async function loadPrices() {
         syncData();
     } catch (e) {
         console.error(e);
-        document.getElementById('product-select').innerHTML = '<option>Connection Error - Check Google Sheet</option>';
+        document.getElementById('product-select').innerHTML = '<option>Connection Error</option>';
     }
 }
 
@@ -160,7 +159,7 @@ function getFullPrice() {
 
 function updateText() {
     const subtotal = getFullPrice();
-    document.getElementById('subtotal-display').innerText = "$" + subtotal.toLocaleString(undefined, {minimumFractionDigits: 0});
+    document.getElementById('subtotal-display').innerText = "$" + subtotal.toLocaleString(undefined, {maximumFractionDigits: 0});
     const tradeIn = parseFloat(document.getElementById('trade-val').value) || 0;
     const adjustedTotal = subtotal - tradeIn;
     const pct = document.getElementById('dep-slider').value;
@@ -205,9 +204,10 @@ function calculateWeekly() {
     const loan = (subtotal - tradeIn) - (parseFloat(document.getElementById('dep-num').value) || 0);
     const rate = (parseFloat(sel.getAttribute('data-rate')) || 0.05) / 52;
     const n = parseInt(document.getElementById('term-select').value) * 52;
-    if (loan <= 0) { document.getElementById('weekly-result').innerText = "$0.00"; return; }
+    if (loan <= 0) { document.getElementById('weekly-result').innerText = "$0"; return; }
     const pmt = (loan * rate) / (1 - Math.pow(1 + rate, -n));
-    document.getElementById('weekly-result').innerText = "$" + pmt.toLocaleString(undefined, {minimumFractionDigits: 2});
+    // Updated to remove decimals (rounded to nearest dollar)
+    document.getElementById('weekly-result').innerText = "$" + Math.round(pmt).toLocaleString();
 }
 
 window.onload = loadPrices;
