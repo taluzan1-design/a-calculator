@@ -4,15 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alma Investment Calculator</title>
-
     <link rel="apple-touch-icon" href="https://anybodi.com.au/wp-content/uploads/bpxcftr-profile-uploads/741/image/Alma-Purple-Logo-01.png">
     <link rel="icon" type="image/png" href="https://www.almalasers.com/wp-content/themes/alma/assets/images/favicon.png">
 
-    <style>
-        :root { --alma-purple: #4b2c73; ...
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alma Investment Calculator</title>
     <style>
         :root { --alma-purple: #4b2c73; --alma-light-purple: #f9f6ff; --alma-text: #2c3e50; --alma-gray: #95a5a6; }
         body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; display: flex; justify-content: center; padding: 20px; background: #f4f7f9; }
@@ -24,8 +18,15 @@
         label { display: block; margin: 18px 0 6px; font-weight: 600; color: var(--alma-text); font-size: 13px; text-transform: uppercase; }
         select, input[type="number"] { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #dce4ec; font-size: 16px; box-sizing: border-box; }
         input[type="range"] { width: 100%; margin-top: 10px; accent-color: var(--alma-purple); }
+        
         .trade-in-btn { background: none; border: 1px solid var(--alma-purple); color: var(--alma-purple); padding: 6px 14px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold; margin: 10px 0; display: block; }
         #trade-in-section, #harmony-options { display: none; margin: 10px 0; background: var(--alma-light-purple); padding: 15px; border-radius: 10px; border-left: 4px solid var(--alma-purple); }
+        
+        /* Subtotal Styling */
+        .subtotal-box { margin: 15px 0; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .subtotal-box span { font-size: 11px; color: var(--alma-gray); text-transform: uppercase; letter-spacing: 0.5px; font-weight: bold; }
+        .subtotal-box h3 { margin: 5px 0 0; color: var(--alma-purple); font-size: 24px; font-weight: 700; }
+
         .applicator-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
         .result-box { background: var(--alma-purple); color: white; padding: 25px; border-radius: 12px; text-align: center; margin-top: 25px; }
         .result-box h2 { margin: 8px 0 0; font-size: 38px; font-weight: 700; }
@@ -57,6 +58,11 @@
             <div><small>Laser (Qty)</small><input type="number" id="laser-count" value="0" min="0" oninput="updateText()"></div>
             <div><small>IPL/AFT (Qty)</small><input type="number" id="ipl-count" value="0" min="0" oninput="updateText()"></div>
         </div>
+    </div>
+
+    <div class="subtotal-box">
+        <span>System & Applicators Subtotal (Excl. GST)</span>
+        <h3 id="subtotal-display">$0.00</h3>
     </div>
     
     <button type="button" class="trade-in-btn" onclick="toggleTradeIn()">+ Add Trade-In Value</button>
@@ -92,13 +98,11 @@
 </div>
 
 <script>
-// Verified CSV Link
 const googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSFAcnJ9hhxYygF0kShdyAhVSkDEnesnjIClHRv-ltdf51sGoAw_MWYNTACsN-6VxqmlI_PcudjNDd-/pub?output=csv';
 
 async function loadPrices() {
     try {
         const response = await fetch(googleSheetUrl + '&t=' + new Date().getTime());
-        if (!response.ok) throw new Error("Fetch failed");
         const csvData = await response.text();
         const rows = csvData.split(/\r?\n/).filter(row => row.trim() !== "").slice(1);
         const select = document.getElementById('product-select');
@@ -113,108 +117,78 @@ async function loadPrices() {
                 opt.text = cols[0].trim().replace(/"/g, '');
                 opt.setAttribute('data-img', cols[2]?.trim() || '');
                 opt.setAttribute('data-rate', parseFloat(cols[4]) || 0.05);
-                
-                // Pulling from your layout: Col F (Index 5) and Col G (Index 6)
                 opt.setAttribute('data-laser-p', parseFloat(cols[5]) || 0);
                 opt.setAttribute('data-ipl-p', parseFloat(cols[6]) || 0);
-                
                 select.appendChild(opt);
             }
         });
         syncData();
-    } catch (e) { 
-        console.error("Load Error:", e);
-        document.getElementById('product-select').innerHTML = '<option>Error Loading Database</option>';
-    }
+    } catch (e) { console.error(e); }
 }
 
 function syncData() {
-    const select = document.getElementById('product-select');
-    if (!select.selectedOptions.length) return;
-    const sel = select.selectedOptions[0];
-    const text = sel.text.toLowerCase();
-    
-    // Check for Harmony
-    document.getElementById('harmony-options').style.display = text.includes('harmony') ? 'block' : 'none';
-    
-    // Update Image
-    const imgUrl = sel.getAttribute('data-img');
-    document.getElementById('product-img').src = imgUrl && imgUrl.startsWith('http') ? imgUrl : "https://via.placeholder.com/400x260?text=Alma+System";
-    
-    // Update Rate
-    const rate = parseFloat(sel.getAttribute('data-rate')) || 0.05;
-    document.getElementById('rate-display').innerText = "Annual Rate: " + (rate * 100).toFixed(1) + "%";
-    
+    const sel = document.getElementById('product-select').selectedOptions[0];
+    if (!sel) return;
+    document.getElementById('harmony-options').style.display = sel.text.toLowerCase().includes('harmony') ? 'block' : 'none';
+    document.getElementById('product-img').src = sel.getAttribute('data-img') || "https://via.placeholder.com/400x260?text=Alma+System";
+    document.getElementById('rate-display').innerText = "Annual Rate: " + (parseFloat(sel.getAttribute('data-rate'))*100).toFixed(1) + "%";
     updateText();
 }
 
 function getFullPrice() {
     const sel = document.getElementById('product-select').selectedOptions[0];
     if (!sel) return 0;
-    
     const base = parseFloat(sel.value) || 0;
     const lPrice = parseFloat(sel.getAttribute('data-laser-p')) || 0;
     const iPrice = parseFloat(sel.getAttribute('data-ipl-p')) || 0;
-    
     const lQty = parseInt(document.getElementById('laser-count').value) || 0;
     const iQty = parseInt(document.getElementById('ipl-count').value) || 0;
-    
     return base + (lQty * lPrice) + (iQty * iPrice);
 }
 
 function updateText() {
-    const full = getFullPrice() - (parseFloat(document.getElementById('trade-val').value) || 0);
-    const pct = document.getElementById('dep-slider').value;
+    const subtotal = getFullPrice();
+    document.getElementById('subtotal-display').innerText = "$" + subtotal.toLocaleString(undefined, {minimumFractionDigits: 0});
+
+    const tradeIn = parseFloat(document.getElementById('trade-val').value) || 0;
+    const adjustedTotal = subtotal - tradeIn;
     
+    const pct = document.getElementById('dep-slider').value;
     document.getElementById('dep-perc-label').innerText = pct + "% Deposit";
-    document.getElementById('dep-num').value = Math.round(full * (pct / 100));
+    document.getElementById('dep-num').value = Math.round(adjustedTotal * (pct / 100));
     calculateWeekly();
 }
 
 function updateSlider() {
-    const full = getFullPrice() - (parseFloat(document.getElementById('trade-val').value) || 0);
+    const subtotal = getFullPrice();
+    const tradeIn = parseFloat(document.getElementById('trade-val').value) || 0;
+    const adjustedTotal = subtotal - tradeIn;
     const amt = parseFloat(document.getElementById('dep-num').value) || 0;
-    let pct = full > 0 ? Math.round((amt / full) * 100) : 15;
-    
-    const finalPct = Math.min(Math.max(pct, 15), 100);
-    document.getElementById('dep-slider').value = finalPct;
-    document.getElementById('dep-perc-label').innerText = finalPct + "% Deposit";
-    calculateWeekly();
+    let pct = adjustedTotal > 0 ? Math.round((amt / adjustedTotal) * 100) : 15;
+    document.getElementById('dep-slider').value = Math.min(Math.max(pct, 15), 100);
+    updateText();
 }
 
 function toggleTradeIn() {
     const s = document.getElementById('trade-in-section');
     const btn = document.querySelector('.trade-in-btn');
-    if (s.style.display === 'block') {
-        s.style.display = 'none';
-        document.getElementById('trade-val').value = '';
-        btn.innerText = '+ Add Trade-In Value';
-    } else {
-        s.style.display = 'block';
-        btn.innerText = '- Remove Trade-In';
-    }
+    s.style.display = s.style.display === 'block' ? 'none' : 'block';
+    btn.innerText = s.style.display === 'block' ? '- Remove Trade-In' : '+ Add Trade-In Value';
+    if(s.style.display === 'none') document.getElementById('trade-val').value = '';
     updateText();
 }
 
 function calculateWeekly() {
     const sel = document.getElementById('product-select').selectedOptions[0];
-    if (!sel) return;
-
-    const full = getFullPrice() - (parseFloat(document.getElementById('trade-val').value) || 0);
-    const deposit = parseFloat(document.getElementById('dep-num').value) || 0;
-    const loan = full - deposit;
+    const subtotal = getFullPrice();
+    const tradeIn = parseFloat(document.getElementById('trade-val').value) || 0;
+    const loan = (subtotal - tradeIn) - (parseFloat(document.getElementById('dep-num').value) || 0);
+    const rate = (parseFloat(sel.getAttribute('data-rate')) || 0.05) / 52;
+    const n = parseInt(document.getElementById('term-select').value) * 52;
     
-    const annualRate = parseFloat(sel.getAttribute('data-rate')) || 0.05;
-    const weeklyRate = annualRate / 52;
-    const totalWeeks = parseInt(document.getElementById('term-select').value) * 52;
-    
-    if (loan <= 0 || weeklyRate <= 0) {
-        document.getElementById('weekly-result').innerText = "$0.00";
-        return;
-    }
-
-    const pmt = (loan * weeklyRate) / (1 - Math.pow(1 + weeklyRate, -totalWeeks));
-    document.getElementById('weekly-result').innerText = "$" + pmt.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    if (loan <= 0) { document.getElementById('weekly-result').innerText = "$0.00"; return; }
+    const pmt = (loan * rate) / (1 - Math.pow(1 + rate, -n));
+    document.getElementById('weekly-result').innerText = "$" + pmt.toLocaleString(undefined, {minimumFractionDigits: 2});
 }
 
 window.onload = loadPrices;
