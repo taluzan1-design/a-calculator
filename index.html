@@ -26,10 +26,12 @@
         .btn-group { display: flex; gap: 8px; margin: 10px 0; }
         .toggle-btn { background: none; border: 1px solid var(--alma-purple); color: var(--alma-purple); padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: bold; flex: 1; text-align: center; }
 
+        /* Ensuring Subtotal starts as Display: None */
         #trade-in-section, #harmony-options, #subtotal-section { display: none; margin: 10px 0; background: var(--alma-light-purple); padding: 15px; border-radius: 10px; border-left: 4px solid var(--alma-purple); }
         
-        .subtotal-box span { font-size: 10px; color: var(--alma-gray); text-transform: uppercase; font-weight: bold; }
-        .subtotal-box h3 { margin: 5px 0 0; color: var(--alma-purple); font-size: 24px; font-weight: 700; }
+        .subtotal-box { text-align: center; padding: 10px 0; }
+        .subtotal-box span { font-size: 10px; color: var(--alma-gray); text-transform: uppercase; font-weight: bold; display: block; }
+        .subtotal-box h3 { margin: 8px 0 0; color: var(--alma-purple); font-size: 32px; font-weight: 700; }
 
         .applicator-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
         .result-box { background: var(--alma-purple); color: white; padding: 25px; border-radius: 12px; text-align: center; margin-top: 25px; transition: 0.3s; opacity: 0.6; }
@@ -45,7 +47,7 @@
 
 <div class="calc-card">
     <div class="logo-container">
-        <img src="https://anybodi.com.au/wp-content/uploads/bpxcftr-profile-uploads/741/image/Alma-Purple-Logo-01.png" class="company-logo" alt="Alma Lasers">
+        <img src="https://anybodi.com.au/wp-content/uploads/bpxcftr-profile-uploads/741/image/Alma-Purple-Logo-01.png" class="company-logo">
     </div>
 
     <div class="img-container">
@@ -73,11 +75,11 @@
     </div>
 
     <div class="btn-group">
-        <button type="button" id="subtotal-btn" class="toggle-btn" onclick="toggleSection('subtotal-section', 'subtotal-btn', '+ Show Subtotal', '- Hide Subtotal')">- Hide Subtotal</button>
+        <button type="button" id="subtotal-btn" class="toggle-btn" onclick="toggleSection('subtotal-section', 'subtotal-btn', '+ Show Subtotal', '- Hide Subtotal')">+ Show Subtotal</button>
         <button type="button" id="trade-btn" class="toggle-btn" onclick="toggleSection('trade-in-section', 'trade-btn', '+ Add Trade-In', '- Remove Trade-In')">+ Add Trade-In</button>
     </div>
 
-    <div id="subtotal-section" style="display:block;">
+    <div id="subtotal-section">
         <div class="subtotal-box">
             <span id="sub-label">Subtotal (System & Applicators)</span>
             <h3 id="subtotal-display">$0</h3>
@@ -108,9 +110,7 @@ const googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSFAcnJ9
 let currentDiscount = 0; let currentTerm = 0;
 
 function parseCSVLine(text) {
-    const result = [];
-    let cell = '';
-    let inQuotes = false;
+    const result = []; let cell = ''; let inQuotes = false;
     for (let i = 0; i < text.length; i++) {
         let char = text[i];
         if (char === '"') inQuotes = !inQuotes;
@@ -131,15 +131,15 @@ async function loadPrices() {
 
         rows.forEach(row => {
             const cols = parseCSVLine(row);
-            if (cols.length >= 7) { // Ensure we have enough columns
+            if (cols.length >= 7) {
                 const opt = document.createElement('option');
-                opt.text = cols[0]; // Name
-                opt.value = cols[1].replace(/[^0-9.]/g, ''); // Base Price
-                opt.setAttribute('data-img', cols[2] || ''); // Image URL
-                let rate = parseFloat(cols[4]); // Monthly Rate (Column E)
+                opt.text = cols[0];
+                opt.value = cols[1].replace(/[^0-9.]/g, '');
+                opt.setAttribute('data-img', cols[2] || '');
+                let rate = parseFloat(cols[4]);
                 opt.setAttribute('data-rate', isNaN(rate) ? 0.05 : (rate > 1 ? rate/100 : rate));
-                opt.setAttribute('data-laser-p', parseFloat(cols[5].replace(/[^0-9.]/g, '')) || 0); // Laser (Column F)
-                opt.setAttribute('data-ipl-p', parseFloat(cols[6].replace(/[^0-9.]/g, '')) || 0); // IPL (Column G)
+                opt.setAttribute('data-laser-p', parseFloat(cols[5].replace(/[^0-9.]/g, '')) || 0);
+                opt.setAttribute('data-ipl-p', parseFloat(cols[6].replace(/[^0-9.]/g, '')) || 0);
                 select.appendChild(opt);
             }
         });
@@ -216,9 +216,10 @@ function manualDeposit() {
 
 function toggleSection(id, btnId, s, h) {
     const sec = document.getElementById(id);
-    const hidden = sec.style.display === 'none' || sec.style.display === '';
-    sec.style.display = hidden ? 'block' : 'none';
-    document.getElementById(btnId).innerText = hidden ? h : s;
+    const btn = document.getElementById(btnId);
+    const isHidden = sec.style.display === 'none' || sec.style.display === '';
+    sec.style.display = isHidden ? 'block' : 'none';
+    btn.innerText = isHidden ? h : s;
 }
 
 window.onload = loadPrices;
